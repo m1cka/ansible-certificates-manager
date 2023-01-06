@@ -30,7 +30,7 @@
 - name: make sure certificate is installed
   copy:
     content: '{{ item.certificate | b64decode }}'
-    dest: "{{ item.custom_location | default(location) }}/{{item.name}}.{{ item.custom_extension | default('cert')}}"
+    dest: "{{ item.custom_location | default(location) }}/{{item.name}}.{{ item.custom_extension | default(certificate_extension)}}"
     owner: '{{ item.custom_certificate_owner | default(certificate_owner) }}'
     group: '{{ item.custom_certificate_group | default(certificate_group) }}'
     mode: '{{ item.custom_certificate_mode | default(certificate_mode) }}'
@@ -51,9 +51,51 @@
 - name: make sure client certificate is installed
   copy:
     content: '{{ item.client_certificate | b64decode }}'
-    dest: "{{ item.custom_location | default(location) }}/{{item.name}}.{{item.custom_extension | default('cert')}}"
+    dest: "{{ item.custom_location | default(location) }}/{{item.name}}.{{item.custom_extension | default(certificate_extension)}}"
     owner: '{{ item.custom_certificate_owner | default(certificate_owner) }}'
     group: '{{ item.custom_certificate_group | default(certificate_group) }}'
     mode: '{{ item.custom_certificate_mode | default(certificate_mode) }}'
   with_items: '{{ client_certificates }}'
   no_log: true
+
+
+- name: Find cert files under location
+  find:
+    paths: "{{ item.custom_location | default(location) }}"
+    file_type: file
+    # patterns: "*.*"
+    excludes: '*.key'
+  register: find_result
+
+- name: Check validity
+  openssl_certificate_info:
+    path: "{{ item.path }}"
+    valid_at:
+      point_1: "+1w"
+      point_2: "+4w"
+  register: cert_info
+  loop: "{{ find_result.files }}"
+
+- name: Filter out valid certs
+  set_fact:
+    outdated_certs: "{{ cert_info | json_query('results[? !(valid_at.point_1) || !(valid_at.point_2)]') }}"
+
+# - name: debug cert_info
+#   debug:
+#     var: cert_info
+
+- block:
+    - name: Check that all certificates are valid
+      assert:
+        that:
+          - outdated_certs | count == 0
+
+  rescue:
+    - name: Show info about outdated certs
+      debug:
+        msg: >-
+          {{ { "Outdated Certs": outdated_certs | json_query("[].item.path") } }}
+
+    - name: fail
+      fail:
+        msg: "Outdated certs found. See list above"
