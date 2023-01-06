@@ -10,7 +10,7 @@ name: CI
 
 defaults:
   run:
-    working-directory: 'm1cka.molecule-tests'
+    working-directory: 'm1cka.ansible-certificates-manager'
 
 jobs:
 
@@ -21,7 +21,7 @@ jobs:
       - name: Check out the codebase.
         uses: actions/checkout@v3
         with:
-          path: 'm1cka.molecule-tests'
+          path: 'm1cka.ansible-certificates-manager'
 
       - name: Set up Python 3.
         uses: actions/setup-python@v4
@@ -51,7 +51,7 @@ jobs:
       - name: Check out the codebase.
         uses: actions/checkout@v3
         with:
-          path: 'm1cka.molecule-tests'
+          path: 'm1cka.ansible-certificates-manager'
 
       - name: Set up Python 3.
         uses: actions/setup-python@v4
