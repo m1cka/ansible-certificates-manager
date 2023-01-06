@@ -3,8 +3,6 @@ ansible-certificates-manager
 
 This role manage certificates
 
-[![Ansible Galaxy](https://img.shields.io/ansible/role/18528.svg)](https://galaxy.ansible.com/salamachinas/certificates-manager/)
-
 Requirements
 ------------
 
@@ -13,10 +11,6 @@ in the metadata file.
 
 Install
 -------
-
-```sh
-ansible-galaxy install salamachinas.certificates-manager
-```
 
 Example Playbook
 ----------------
