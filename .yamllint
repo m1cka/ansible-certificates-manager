@@ -1,0 +1,8 @@
+---
+extends: default
+
+ignore: tests/
+rules:
+  line-length:
+    max: 2500
+    level: warning
